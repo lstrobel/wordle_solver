@@ -1,7 +1,10 @@
 # Solve the game wordle, by reducing the possible words at each stage, and then choosing the most likely one
 from typing import Callable
 
+import ray
+
 import guess_strategies as gs
+from util import get_result_string
 
 
 def trim_word_space(words, possible_letters, known_letters):
@@ -29,7 +32,7 @@ def query_result(guess):
 
 
 def main(
-    query_result_func: Callable[[str], str], guesser: Callable[[set], str], debug=False
+    query_result_func: Callable[[str], str], guesser, debug=False
 ):
     # Open file
     with open("res/official.txt", "r") as f:
@@ -59,7 +62,7 @@ def main(
 
     while len(valid_words) > 1:
         valid_words = trim_word_space(valid_words, possible_letters, known_letters)
-        guess = guesser(valid_words)
+        guess = ray.get(guesser(valid_words))
         if debug:
             print("Number of valid words:", len(valid_words))
             if len(valid_words) < 20:
@@ -81,26 +84,6 @@ def main(
                 known_letters.add(guess[i])
             elif result[i] == "O":
                 possible_letters[i] = {guess[i]}
-
-
-def get_result_string(guess, solution, output):
-    """
-    Resturns the result string for the given guess.
-    For each character in the string, "-" means the letter is not in the word,
-     "X" means the letter is in the word but the position is wrong,
-    and "O" means the letter is in the word and the position is correct
-    """
-    result = ""
-    for i in range(len(guess)):
-        if guess[i] == solution[i]:
-            result += "O"
-        elif guess[i] in solution:
-            result += "X"
-        else:
-            result += "-"
-
-    output[0] += 1
-    return result
 
 
 if __name__ == "__main__":

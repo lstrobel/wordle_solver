@@ -9,10 +9,6 @@ with open("res/google-10000-english-usa-no-swears-medium.txt", "r") as f:
             line = line.strip()
             print(line)
             # must be five characters long, and contain only letters and starts with a lowercase letter
-            if (
-                len(line) == 5
-                and line.isalpha()
-                and line[0].islower()
-            ):
+            if len(line) == 5 and line.isalpha() and line[0].islower():
                 # write to file
                 f2.write(line + "\n")
